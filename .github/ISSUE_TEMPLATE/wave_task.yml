@@ -1,0 +1,41 @@
+name: Drips Wave task proposal
+description: Propose or claim a contributor-ready Wave task
+title: "wave: "
+labels: [wave]
+body:
+  - type: input
+    id: issue
+    attributes:
+      label: Related backlog item
+      placeholder: T01, M01, H01, or issue URL
+    validations:
+      required: true
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Complexity
+      options: [trivial, medium, high]
+    validations:
+      required: true
+  - type: textarea
+    id: plan
+    attributes:
+      label: Focused implementation plan
+    validations:
+      required: true
+  - type: textarea
+    id: tests
+    attributes:
+      label: Verification plan
+      description: Include deterministic tests and all relevant repository checks.
+    validations:
+      required: true
+  - type: checkboxes
+    id: agreement
+    attributes:
+      label: Contributor checklist
+      options:
+        - label: I will keep this change within the stated scope.
+          required: true
+        - label: I have read CONTRIBUTING.md and the Code of Conduct.
+          required: true

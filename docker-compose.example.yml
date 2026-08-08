@@ -1,0 +1,28 @@
+services:
+  chaos-proxy:
+    build:
+      context: .
+    command:
+      - proxy
+      - --upstream
+      - ${SOROBAN_RPC_URL:-http://host.docker.internal:8000}
+      - --host
+      - 0.0.0.0
+      - --port
+      - "9000"
+      - --scenario
+      - rate-limit
+      - --config
+      - '{"everyNth":5,"retryAfterMs":1000}'
+    ports:
+      - "127.0.0.1:9000:9000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: "no"

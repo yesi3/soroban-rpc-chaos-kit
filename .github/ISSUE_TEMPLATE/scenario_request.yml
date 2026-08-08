@@ -1,0 +1,39 @@
+name: Chaos scenario request
+description: Propose a deterministic Stellar RPC failure scenario
+title: "scenario: "
+labels: [scenario]
+body:
+  - type: textarea
+    id: failure
+    attributes:
+      label: Real-world failure mode
+      description: Explain the Stellar/Soroban behavior without naming private systems.
+    validations:
+      required: true
+  - type: textarea
+    id: semantics
+    attributes:
+      label: RPC methods and semantics
+      description: Identify affected methods, fields, ordering, and expected typed error.
+    validations:
+      required: true
+  - type: textarea
+    id: determinism
+    attributes:
+      label: Deterministic configuration
+      description: Describe counters, plans, seeds, and reset behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Suggested acceptance criteria
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety
+      options:
+        - label: This proposal contains no credentials or sensitive transaction payloads.
+          required: true

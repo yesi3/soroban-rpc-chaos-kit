@@ -1,0 +1,78 @@
+{
+  "name": "@yesi3/soroban-rpc-chaos-kit",
+  "version": "0.1.0",
+  "description": "Deterministic Stellar Soroban RPC fault injection and resilience utilities",
+  "author": "yesi3",
+  "type": "module",
+  "packageManager": "npm@10.9.2",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./chaos": {
+      "types": "./dist/chaos/index.d.ts",
+      "import": "./dist/chaos/index.js"
+    },
+    "./resilience": {
+      "types": "./dist/resilience/index.d.ts",
+      "import": "./dist/resilience/index.js"
+    }
+  },
+  "bin": {
+    "soroban-rpc-chaos": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "docs"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yesi3/soroban-rpc-chaos-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yesi3/soroban-rpc-chaos-kit/issues"
+  },
+  "homepage": "https://github.com/yesi3/soroban-rpc-chaos-kit#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src tests examples",
+    "cli": "tsx src/cli.ts"
+  },
+  "keywords": [
+    "stellar",
+    "soroban",
+    "rpc",
+    "chaos-engineering",
+    "testing"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@stellar/stellar-sdk": "^16.2.0",
+    "commander": "^15.0.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.8.1",
+    "tsup": "^8.5.1",
+    "tsx": "^4.20.5",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.66.0",
+    "vitest": "^4.1.10"
+  }
+}
