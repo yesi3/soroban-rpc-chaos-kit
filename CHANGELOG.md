@@ -6,6 +6,8 @@ All notable changes will be documented here. The format follows [Keep a Changelo
 
 ### Added
 
+- `soroban-rpc-chaos scenarios` command and shared `createProxyScenario` / `PROXY_SCENARIO_NAMES` helpers for the local proxy catalog.
+- CLI `--version` from package metadata.
 - Deterministic chaos engine with composable request, result, and error hooks.
 - Stellar-aware stale/regressing ledger, retention, timeout, rate-limit, malformed response, and event delivery scenarios.
 - Typed transport, timeout, retention, rate-limit, malformed response, stale ledger, and failover errors.

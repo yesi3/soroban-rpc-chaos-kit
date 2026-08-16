@@ -17,6 +17,8 @@ import {
   decodeTopicSymbol,
   duplicateEvents,
   encodeTopicSymbol,
+  PROXY_SCENARIO_NAMES,
+  createProxyScenario,
   malformedResponse,
   missingEvents,
   outOfOrderEvents,
@@ -37,6 +39,25 @@ const rpc = (value: unknown): RpcTransport => ({
 const events = (): RpcEvent[] => [
   { id: "1", ledger: 10 }, { id: "2", ledger: 11 }, { id: "3", ledger: 12 },
 ];
+
+describe("proxy scenario catalog", () => {
+  it("exports the CLI-supported scenario names", () => {
+    expect(PROXY_SCENARIO_NAMES).toEqual(["stale-ledger", "retention", "rate-limit", "timeout"]);
+  });
+  it("builds each proxy scenario with a stable name", () => {
+    for (const name of PROXY_SCENARIO_NAMES) {
+      expect(createProxyScenario(name).name).toBe(
+        name === "retention" ? "retention-rejection" : name,
+      );
+    }
+  });
+  it("applies stale-ledger config through the proxy factory", async () => {
+    const engine = new ChaosEngine(rpc({ sequence: 10 }), [
+      createProxyScenario("stale-ledger", { decrement: 3 }),
+    ]);
+    expect(await engine.request("getLatestLedger")).toEqual({ sequence: 7 });
+  });
+});
 
 describe("chaos scenarios", () => {
   it("decrements sequence", async () => {

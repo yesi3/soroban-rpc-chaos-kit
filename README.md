@@ -42,6 +42,9 @@ const ledger = await rpc.request("getLatestLedger");
 ### Proxy CLI
 
 ```sh
+soroban-rpc-chaos scenarios
+soroban-rpc-chaos --version
+
 soroban-rpc-chaos proxy --upstream http://127.0.0.1:8000 --port 9000 \
   --scenario rate-limit --config '{"everyNth":5,"retryAfterMs":1000}'
 

@@ -171,3 +171,40 @@ function mulberry32(seed: number): () => number {
     return ((value ^ value >>> 14) >>> 0) / 4_294_967_296;
   };
 }
+
+/** Scenario names accepted by the local chaos proxy CLI. */
+export const PROXY_SCENARIO_NAMES = [
+  "stale-ledger",
+  "retention",
+  "rate-limit",
+  "timeout",
+] as const;
+
+export type ProxyScenarioName = (typeof PROXY_SCENARIO_NAMES)[number];
+
+function numberConfig(value: unknown, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+/** Build a proxy CLI scenario from a stable name and JSON config object. */
+export function createProxyScenario(
+  name: ProxyScenarioName,
+  config: Record<string, unknown> = {},
+): ChaosScenario {
+  switch (name) {
+    case "stale-ledger":
+      return staleLedger(numberConfig(config.decrement, 1));
+    case "retention":
+      return retentionRejection(numberConfig(config.minimumLedger, 1));
+    case "rate-limit":
+      return rateLimit({
+        everyNth: numberConfig(config.everyNth, 1),
+        retryAfterMs: numberConfig(config.retryAfterMs, 1000),
+      });
+    case "timeout":
+      return timeoutScenario({
+        delayMs: numberConfig(config.delayMs, 1000),
+        neverResolve: config.neverResolve === true,
+      });
+  }
+}
