@@ -2,6 +2,7 @@ import { scValToNative, xdr } from "@stellar/stellar-sdk";
 
 /** Encode a Soroban ScVal symbol as base64 XDR. */
 export function encodeTopicSymbol(symbol: string): string {
+  if (symbol.length === 0) throw new RangeError("Soroban symbols cannot be empty");
   if (Buffer.byteLength(symbol, "utf8") > 32) throw new RangeError("Soroban symbols cannot exceed 32 bytes");
   return xdr.ScVal.scvSymbol(symbol).toXDR("base64");
 }
