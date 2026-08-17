@@ -36,7 +36,12 @@ export class MonotonicLedgerGuard {
   }
 
   /** Reset the guard, optionally seeding a sequence. */
-  reset(sequence?: number): void { this.current = sequence; }
+  reset(sequence?: number): void {
+    if (sequence !== undefined && (!Number.isSafeInteger(sequence) || sequence < 0)) {
+      throw new RangeError("Ledger must be a non-negative safe integer");
+    }
+    this.current = sequence;
+  }
   /** Current accepted sequence. */
   value(): number | undefined { return this.current; }
 }
