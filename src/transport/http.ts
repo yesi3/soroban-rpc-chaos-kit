@@ -16,7 +16,9 @@ export interface HttpTransportOptions {
 /** Standards-based fetch JSON-RPC transport. */
 export class HttpRpcTransport implements RpcTransport {
   private id = 0;
-  constructor(public readonly url: string, private readonly options: HttpTransportOptions = {}) {}
+  constructor(public readonly url: string, private readonly options: HttpTransportOptions = {}) {
+    if (!url.trim()) throw new TypeError("RPC URL is required");
+  }
 
   async request<R = JsonValue>(method: string, params?: JsonValue, requestOptions?: { signal?: AbortSignal }): Promise<R> {
     const controller = new AbortController();
