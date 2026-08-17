@@ -43,6 +43,7 @@ const ledger = await rpc.request("getLatestLedger");
 
 ```sh
 soroban-rpc-chaos scenarios
+soroban-rpc-chaos scenarios --json
 soroban-rpc-chaos --version
 
 soroban-rpc-chaos proxy --upstream http://127.0.0.1:8000 --port 9000 \

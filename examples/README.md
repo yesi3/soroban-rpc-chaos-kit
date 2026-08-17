@@ -27,6 +27,7 @@ Stop it with `Ctrl-C`. Use only local/test endpoints. Do not place credentials i
 After `npm run build`, run:
 
 ```sh
+node dist/cli.js scenarios --json
 node dist/cli.js proxy \
   --upstream http://127.0.0.1:8000 \
   --port 9000 \
