@@ -152,6 +152,15 @@ describe("ledger guard", () => {
     const guard = new MonotonicLedgerGuard("accept"); guard.observe(10);
     expect(guard.observe(9).current).toBe(9);
   });
+  it("rejects invalid reset seeds", () => {
+    const guard = new MonotonicLedgerGuard();
+    expect(() => guard.reset(-1)).toThrow(RangeError);
+    expect(() => guard.reset(1.5)).toThrow(RangeError);
+    guard.reset(4);
+    expect(guard.value()).toBe(4);
+    guard.reset();
+    expect(guard.value()).toBeUndefined();
+  });
 });
 
 describe("event cursor", () => {
@@ -233,6 +242,7 @@ describe("topic XDR", () => {
   it("round trips a symbol", () => expect(decodeTopicSymbol(encodeTopicSymbol("transfer"))).toBe("transfer"));
   it("rejects raw topic instead of confusing it with base64 XDR (real bug)", () => expect(() => decodeTopicSymbol("transfer")).toThrow(TypeError));
   it("rejects oversized symbols", () => expect(() => encodeTopicSymbol("x".repeat(33))).toThrow(RangeError));
+  it("rejects empty symbols", () => expect(() => encodeTopicSymbol("")).toThrow(RangeError));
   it("builds encoded contract filters", () => {
     const filter = buildContractEventFilter(["CA"], ["mint"]);
     expect(decodeTopicSymbol(filter.topics![0]![0]!)).toBe("mint");
@@ -240,6 +250,10 @@ describe("topic XDR", () => {
 });
 
 describe("HTTP transport", () => {
+  it("rejects a blank URL", () => {
+    expect(() => new HttpRpcTransport("")).toThrow(TypeError);
+    expect(() => new HttpRpcTransport("   ")).toThrow(TypeError);
+  });
   it("returns JSON-RPC results", async () => {
     const fetch = vi.fn(async () => new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { sequence: 2 } })));
     await expect(new HttpRpcTransport("http://local", { fetch }).request("x")).resolves.toEqual({ sequence: 2 });
