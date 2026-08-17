@@ -28,7 +28,12 @@ const program = new Command()
 program
   .command("scenarios")
   .description("List scenario names accepted by the local chaos proxy")
-  .action(() => {
+  .option("--json", "print a JSON array", false)
+  .action((options: { json?: boolean }) => {
+    if (options.json) {
+      process.stdout.write(`${JSON.stringify([...PROXY_SCENARIO_NAMES])}\n`);
+      return;
+    }
     for (const name of PROXY_SCENARIO_NAMES) process.stdout.write(`${name}\n`);
   });
 
