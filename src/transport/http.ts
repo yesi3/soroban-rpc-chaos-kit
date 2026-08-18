@@ -15,9 +15,18 @@ export interface HttpTransportOptions {
 
 /** Standards-based fetch JSON-RPC transport. */
 export class HttpRpcTransport implements RpcTransport {
+  readonly url: string;
   private id = 0;
-  constructor(public readonly url: string, private readonly options: HttpTransportOptions = {}) {
-    if (!url.trim()) throw new TypeError("RPC URL is required");
+  constructor(url: string, private readonly options: HttpTransportOptions = {}) {
+    const normalized = url.trim();
+    if (!normalized) throw new TypeError("RPC URL is required");
+    if (
+      options.timeoutMs !== undefined &&
+      (!Number.isFinite(options.timeoutMs) || options.timeoutMs <= 0)
+    ) {
+      throw new RangeError("timeoutMs must be a positive finite number");
+    }
+    this.url = normalized;
   }
 
   async request<R = JsonValue>(method: string, params?: JsonValue, requestOptions?: { signal?: AbortSignal }): Promise<R> {
