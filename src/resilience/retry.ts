@@ -14,7 +14,13 @@ export interface RetryOptions {
 /** Execute an operation with bounded exponential backoff. */
 export async function retry<T>(operation: (attempt: number) => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const attempts = options.attempts ?? 3;
-  if (attempts < 1) throw new RangeError("attempts must be at least 1");
+  if (!Number.isSafeInteger(attempts) || attempts < 1) throw new RangeError("attempts must be at least 1");
+  if (
+    options.baseDelayMs !== undefined &&
+    (!Number.isFinite(options.baseDelayMs) || options.baseDelayMs < 0)
+  ) {
+    throw new RangeError("baseDelayMs must be a non-negative finite number");
+  }
   for (let attempt = 1; ; attempt++) {
     options.signal?.throwIfAborted();
     try {
