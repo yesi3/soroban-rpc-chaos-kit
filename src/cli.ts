@@ -51,7 +51,18 @@ program
     scenario: string;
     config: string;
   }) => {
-    const config = configSchema.parse(JSON.parse(options.config));
+    const config = (() => {
+      try {
+        return configSchema.parse(JSON.parse(options.config));
+      } catch {
+        throw new Error("Invalid --config JSON object");
+      }
+    })();
+    const port = Number(options.port);
+    if (!Number.isInteger(port) || port < 0 || port > 65_535) {
+      throw new Error("Invalid --port; expected an integer between 0 and 65535");
+    }
+    if (!options.host.trim()) throw new Error("Invalid --host");
     if (!(PROXY_SCENARIO_NAMES as readonly string[]).includes(options.scenario)) {
       throw new Error(
         `Unknown scenario: ${options.scenario}. Supported: ${PROXY_SCENARIO_NAMES.join(", ")}`,
@@ -59,7 +70,7 @@ program
     }
     const scenario = createProxyScenario(options.scenario as ProxyScenarioName, config);
     const proxy = new ChaosProxy(new ChaosEngine(new HttpRpcTransport(options.upstream), [scenario]));
-    const address = await proxy.listen(Number(options.port), options.host);
+    const address = await proxy.listen(port, options.host);
     process.stdout.write(`Chaos proxy listening on ${address.url}\n`);
     const close = async (): Promise<void> => {
       await proxy.close();
@@ -74,9 +85,11 @@ program
   .argument("<url>")
   .option("--samples <number>", "ledger samples", "2")
   .action(async (url: string, options: { samples: string }) => {
-    const result = await inspectEndpoint(new HttpRpcTransport(url), {
-      samples: Number(options.samples),
-    });
+    const samples = Number(options.samples);
+    if (!Number.isInteger(samples) || samples < 1) {
+      throw new Error("Invalid --samples; expected a positive integer");
+    }
+    const result = await inspectEndpoint(new HttpRpcTransport(url), { samples });
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
     if (!result.healthy || result.regressed) process.exitCode = 1;
   });
