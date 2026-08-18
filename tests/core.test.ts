@@ -17,6 +17,7 @@ import {
   decodeTopicSymbol,
   duplicateEvents,
   encodeTopicSymbol,
+  inspectEndpoint,
   PROXY_SCENARIO_NAMES,
   createProxyScenario,
   malformedResponse,
@@ -163,8 +164,29 @@ describe("ledger guard", () => {
   });
 });
 
+describe("diagnostics", () => {
+  it("records a single ledger sample", async () => {
+    const transport = {
+      async request<R>(method: string): Promise<R> {
+        return (method === "getHealth" ? { status: "healthy" } : { sequence: 12 }) as R;
+      },
+    };
+    await expect(inspectEndpoint(transport, { samples: 1 })).resolves.toMatchObject({
+      healthy: true,
+      firstLedger: 12,
+      regressed: false,
+    });
+  });
+  it("rejects invalid sample counts", async () => {
+    await expect(inspectEndpoint(rpc({ sequence: 1 }), { samples: 0 })).rejects.toThrow(RangeError);
+  });
+});
+
 describe("event cursor", () => {
   it("seeds after latest ledger", async () => expect((await SafeEventCursor.seed(async () => 10)).nextStartLedger()).toBe(11));
+  it("rejects an invalid seed ledger", async () => {
+    await expect(SafeEventCursor.seed(async () => -1)).rejects.toThrow(RangeError);
+  });
   it("deduplicates event IDs", async () => {
     const cursor = await SafeEventCursor.seed(async () => 9);
     expect(cursor.observe([{ id: "x", ledger: 10 }, { id: "x", ledger: 10 }])).toHaveLength(1);
@@ -217,6 +239,9 @@ describe("retry", () => {
     const controller = new AbortController(); controller.abort(new Error("stop"));
     await expect(retry(async () => 1, { signal: controller.signal })).rejects.toThrow("stop");
   });
+  it("rejects non-integer attempt counts", async () => {
+    await expect(retry(async () => 1, { attempts: 1.5 })).rejects.toThrow(RangeError);
+  });
 });
 
 describe("failover", () => {
@@ -243,6 +268,9 @@ describe("topic XDR", () => {
   it("rejects raw topic instead of confusing it with base64 XDR (real bug)", () => expect(() => decodeTopicSymbol("transfer")).toThrow(TypeError));
   it("rejects oversized symbols", () => expect(() => encodeTopicSymbol("x".repeat(33))).toThrow(RangeError));
   it("rejects empty symbols", () => expect(() => encodeTopicSymbol("")).toThrow(RangeError));
+  it("rejects whitespace-only symbols", () => expect(() => encodeTopicSymbol("   ")).toThrow(RangeError));
+  it("rejects empty encoded topics", () => expect(() => decodeTopicSymbol("")).toThrow(TypeError));
+  it("rejects blank contract IDs", () => expect(() => buildContractEventFilter([" "])).toThrow(RangeError));
   it("builds encoded contract filters", () => {
     const filter = buildContractEventFilter(["CA"], ["mint"]);
     expect(decodeTopicSymbol(filter.topics![0]![0]!)).toBe("mint");
@@ -253,6 +281,12 @@ describe("HTTP transport", () => {
   it("rejects a blank URL", () => {
     expect(() => new HttpRpcTransport("")).toThrow(TypeError);
     expect(() => new HttpRpcTransport("   ")).toThrow(TypeError);
+  });
+  it("trims RPC URLs", () => {
+    expect(new HttpRpcTransport("  http://local  ").url).toBe("http://local");
+  });
+  it("rejects non-positive timeouts", () => {
+    expect(() => new HttpRpcTransport("http://local", { timeoutMs: 0 })).toThrow(RangeError);
   });
   it("returns JSON-RPC results", async () => {
     const fetch = vi.fn(async () => new Response(JSON.stringify({ jsonrpc: "2.0", id: 1, result: { sequence: 2 } })));
@@ -304,5 +338,9 @@ describe("proxy integration", () => {
     const stats = await fetch(`${address.url}/__chaos/stats`).then((response) => response.json()) as { totalCalls: number };
     expect(stats.totalCalls).toBe(1);
     expect(JSON.stringify(stats)).not.toContain("secret");
+  });
+  it("rejects an invalid listen port", async () => {
+    const proxy = new ChaosProxy(new ChaosEngine(rpc("ok")));
+    await expect(proxy.listen(-1)).rejects.toThrow(RangeError);
   });
 });

@@ -13,7 +13,11 @@ export class SafeEventCursor {
 
   /** Seed a cursor from a latest-ledger provider. */
   static async seed(getLatestLedger: () => Promise<number>): Promise<SafeEventCursor> {
-    return new SafeEventCursor((await getLatestLedger()) + 1);
+    const latest = await getLatestLedger();
+    if (!Number.isSafeInteger(latest) || latest < 0) {
+      throw new RangeError("Latest ledger must be a non-negative safe integer");
+    }
+    return new SafeEventCursor(latest + 1);
   }
 
   /** Restore a cursor snapshot. */
