@@ -16,6 +16,10 @@ export class ChaosProxy {
 
   /** Start listening and return the bound address. */
   async listen(port = 0, host = "127.0.0.1"): Promise<ProxyAddress> {
+    if (!host.trim()) throw new RangeError("host is required");
+    if (!Number.isInteger(port) || port < 0 || port > 65_535) {
+      throw new RangeError("port must be an integer between 0 and 65535");
+    }
     if (this.server) throw new Error("Proxy is already listening");
     this.server = createServer(async (request, response) => {
       response.setHeader("content-type", "application/json");
