@@ -21,5 +21,12 @@ All notable changes will be documented here. The format follows [Keep a Changelo
 
 - Ledger guard `reset()` rejects negative or non-integer seeds, matching `observe()`.
 - Empty topic symbols and blank RPC URLs fail fast instead of producing unusable requests.
+- HTTP transport trims URLs and rejects non-positive timeouts.
+- Diagnostics reject invalid sample counts and ledger sequences.
+- CLI `--config`, `--port`, `--host`, and `--samples` fail with explicit errors.
+- Local proxy `listen()` rejects invalid hosts and ports.
+- Retry `attempts` must be a safe integer; `baseDelayMs` cannot be negative.
+- Topic decode and contract filters reject blank inputs; symbols are trimmed.
+- Event cursor seeding rejects invalid latest-ledger values.
 
 [0.1.0]: https://github.com/yesi3/soroban-rpc-chaos-kit/releases/tag/v0.1.0
